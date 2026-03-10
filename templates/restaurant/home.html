@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}FoodOrder — Delicious Food Delivered Fast{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6 hero-content">
+        <div class="section-label mb-3">🚀 Fast & Fresh Delivery</div>
+        <h1>Great Food, <em>Delivered</em> to Your Door</h1>
+        <p>Choose from hundreds of dishes from the best local restaurants. Fresh ingredients, incredible flavors, delivered in under 45 minutes.</p>
+
+        <div class="hero-search">
+          <input type="text" placeholder="Search for pizza, sushi, burgers...">
+          <button class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-search"></i> Search
+          </button>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <strong>200+</strong>
+            <span>Menu Items</span>
+          </div>
+          <div class="hero-stat">
+            <strong>45min</strong>
+            <span>Avg Delivery</span>
+          </div>
+          <div class="hero-stat">
+            <strong>4.9★</strong>
+            <span>Rating</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 hero-image-side">
+        <div class="hero-food-card">
+          <span class="hero-food-emoji">🍕</span>
+          <h3 style="color: white; font-family: var(--font-display);">Today's Special</h3>
+          <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Margherita Pizza — $12.99</p>
+          <a href="{% url 'menu' %}" class="btn btn-primary btn-sm mt-2">Order Now →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <div class="section-label">Browse by Type</div>
+      <h2 class="section-title">What Are You Craving?</h2>
+    </div>
+    <div class="category-pills justify-content-center">
+      <a href="{% url 'menu' %}" class="category-pill active">🍽️ All</a>
+      {% for cat in categories %}
+      <a href="{% url 'menu' %}?category={{ cat.slug }}" class="category-pill">{{ cat.icon }} {{ cat.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED ITEMS -->
+{% if featured_items %}
+<section class="section section-alt">
+  <div class="container">
+    <div class="d-flex align-items-end justify-content-between mb-4">
+      <div>
+        <div class="section-label">Chef's Picks</div>
+        <h2 class="section-title">Featured Dishes</h2>
+      </div>
+      <a href="{% url 'menu' %}" class="btn btn-outline-primary">View All →</a>
+    </div>
+
+    <div class="row g-4">
+      {% for item in featured_items %}
+      <div class="col-sm-6 col-lg-3">
+        <div class="food-card">
+          {% if item.image %}
+          <div style="overflow: hidden;">
+            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="food-card-img">
+          </div>
+          {% else %}
+          <div class="food-card-img-placeholder">{{ item.category.icon }}</div>
+          {% endif %}
+          <div class="food-card-body">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="food-card-category">{{ item.category.name }}</span>
+              {% if item.is_vegetarian %}<span class="food-badge food-badge-veg">🌱 Veg</span>{% endif %}
+              {% if item.is_spicy %}<span class="food-badge food-badge-spicy">🌶️ Spicy</span>{% endif %}
+            </div>
+            <h5 class="food-card-title">{{ item.name }}</h5>
+            <p class="food-card-desc">{{ item.description }}</p>
+            <div class="food-card-footer">
+              <div>
+                <div class="food-card-price">${{ item.price }}</div>
+                <div class="food-rating">
+                  <span class="star">★</span> {{ item.rating }} ({{ item.total_orders }} orders)
+                </div>
+              </div>
+              {% if user.is_authenticated %}
+              <button class="add-btn" data-add-to-cart="{{ item.id }}" title="Add to cart">+</button>
+              {% else %}
+              <a href="{% url 'login' %}" class="add-btn text-white" title="Login to order">+</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">Simple Process</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Order your favorite food in 3 easy steps</p>
+    </div>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔍</div>
+        <h4 style="font-family: var(--font-display);">Browse Menu</h4>
+        <p class="text-muted">Explore hundreds of dishes across different categories</p>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🛒</div>
+        <h4 style="font-family: var(--font-display);">Add to Cart</h4>
+        <p class="text-muted">Select your favorites, customize quantities</p>
+      </div>
+      <div class="col-md-4">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🚀</div>
+        <h4 style="font-family: var(--font-display);">Fast Delivery</h4>
+        <p class="text-muted">We deliver hot and fresh in under 45 minutes</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR ITEMS -->
+{% if popular_items %}
+<section class="section section-alt">
+  <div class="container">
+    <div class="d-flex align-items-end justify-content-between mb-4">
+      <div>
+        <div class="section-label">Customer Favorites</div>
+        <h2 class="section-title">Most Popular</h2>
+      </div>
+      <a href="{% url 'menu' %}" class="btn btn-outline-primary">See Full Menu →</a>
+    </div>
+    <div class="row g-4">
+      {% for item in popular_items %}
+      <div class="col-sm-6 col-lg-4">
+        <div class="food-card" style="flex-direction: row; height: auto;">
+          <div class="food-card-img-placeholder" style="width: 90px; height: 90px; min-width: 90px; font-size: 2.5rem; border-radius: var(--radius) 0 0 var(--radius);">
+            {{ item.category.icon }}
+          </div>
+          <div class="food-card-body" style="padding: 0.75rem;">
+            <div class="food-card-category">{{ item.category.name }}</div>
+            <div class="food-card-title" style="font-size: 0.95rem;">{{ item.name }}</div>
+            <div class="d-flex align-items-center justify-content-between mt-auto pt-1">
+              <span class="food-card-price" style="font-size: 1rem;">${{ item.price }}</span>
+              {% if user.is_authenticated %}
+              <button class="add-btn" style="width: 28px; height: 28px; font-size: 1rem;" data-add-to-cart="{{ item.id }}">+</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA BANNER -->
+<section class="section" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); padding: 4rem 0;">
+  <div class="container text-center text-white">
+    <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 1rem;">Ready to Order?</h2>
+    <p style="opacity: 0.85; font-size: 1.1rem; margin-bottom: 2rem;">Join thousands of happy customers enjoying fresh food delivered daily</p>
+    <a href="{% url 'menu' %}" class="btn btn-light btn-lg px-5" style="border-radius: 50px; font-weight: 600; color: var(--primary);">
+      Explore Menu 🍽️
+    </a>
+  </div>
+</section>
+
+{% endblock %}

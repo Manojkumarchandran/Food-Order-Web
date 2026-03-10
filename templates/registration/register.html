@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account — FoodOrder{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="bg-white rounded-4 shadow p-5">
+          <div class="text-center mb-4">
+            <div style="font-size: 3rem;">🎉</div>
+            <h2 style="font-family: var(--font-display);">Join FoodOrder</h2>
+            <p class="text-muted">Create your account to start ordering</p>
+          </div>
+
+          <form method="POST">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">First Name</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ form.first_name.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Last Name</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ form.last_name.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ form.username.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ form.email.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ form.password1.errors.0 }}</div>{% endif %}
+              </div>
+              <div class="col-12">
+                <label class="form-label">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}<div class="text-danger" style="font-size: 0.8rem;">{{ form.password2.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill mt-4" style="font-size: 1rem;">
+              Create Account 🚀
+            </button>
+          </form>
+
+          <div class="divider"></div>
+          <p class="text-center text-muted mb-0">
+            Already have an account?
+            <a href="{% url 'login' %}" class="text-primary fw-bold">Sign In</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  input[name="first_name"], input[name="last_name"], input[name="username"],
+  input[name="email"], input[name="password1"], input[name="password2"] {
+    display: block; width: 100%;
+    padding: 0.65rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(232,64,28,0.12); }
+</style>
+{% endblock %}
+{% endblock %}

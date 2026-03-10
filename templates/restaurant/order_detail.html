@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_number }} — FoodOrder{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1>Order #{{ order.order_number }}</h1>
+        <p>Placed on {{ order.created_at|date:"F j, Y \a\t g:i A" }}</p>
+      </div>
+      <span class="status-badge status-{{ order.status }} fs-6">
+        {% if order.status == 'pending' %}⏳
+        {% elif order.status == 'confirmed' %}✅
+        {% elif order.status == 'preparing' %}👨‍🍳
+        {% elif order.status == 'out_for_delivery' %}🛵
+        {% elif order.status == 'delivered' %}🎉
+        {% elif order.status == 'cancelled' %}❌
+        {% endif %}
+        {{ order.get_status_display }}
+      </span>
+    </div>
+  </div>
+</div>
+
+<section class="section" style="padding-top: 2rem;">
+  <div class="container">
+
+    <!-- ORDER TRACKER -->
+    {% if order.status != 'cancelled' %}
+    <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+      <h5 style="font-family: var(--font-display);" class="mb-3">Order Progress</h5>
+      <div class="order-tracker" data-order-id="{{ order.id }}">
+        {% with statuses='pending confirmed preparing out_for_delivery delivered' %}
+        {% for step in 'pending,confirmed,preparing,out_for_delivery,delivered'|make_list %}
+        {% endfor %}
+        {% endwith %}
+
+        {% with order_steps="pending,confirmed,preparing,out_for_delivery,delivered" %}
+        {% for step_str, label, icon in "pending:Order Placed:📋,confirmed:Confirmed:✅,preparing:Preparing:👨‍🍳,out_for_delivery:On the Way:🛵,delivered:Delivered:🎉"|slice:":5"|make_list %}
+        {% endfor %}
+        {% endwith %}
+
+        <!-- Manual tracker steps -->
+        {% with current=order.status %}
+        <div class="tracker-step {% if current == 'pending' or current == 'confirmed' or current == 'preparing' or current == 'out_for_delivery' or current == 'delivered' %}done{% endif %}">
+          <div class="tracker-dot">📋</div>
+          <div class="tracker-label">Placed</div>
+        </div>
+        <div class="tracker-step {% if current == 'confirmed' or current == 'preparing' or current == 'out_for_delivery' or current == 'delivered' %}done{% endif %}">
+          <div class="tracker-dot">✅</div>
+          <div class="tracker-label">Confirmed</div>
+        </div>
+        <div class="tracker-step {% if current == 'preparing' or current == 'out_for_delivery' or current == 'delivered' %}done{% endif %}">
+          <div class="tracker-dot">👨‍🍳</div>
+          <div class="tracker-label">Preparing</div>
+        </div>
+        <div class="tracker-step {% if current == 'out_for_delivery' or current == 'delivered' %}done{% endif %}">
+          <div class="tracker-dot">🛵</div>
+          <div class="tracker-label">On the Way</div>
+        </div>
+        <div class="tracker-step {% if current == 'delivered' %}done{% endif %}">
+          <div class="tracker-dot">🎉</div>
+          <div class="tracker-label">Delivered</div>
+        </div>
+        {% endwith %}
+      </div>
+
+      {% if order.estimated_delivery and order.status != 'delivered' %}
+      <p class="text-muted text-center" style="font-size: 0.9rem;">
+        <i class="bi bi-clock me-1"></i>
+        Estimated delivery: <strong>{{ order.estimated_delivery|date:"g:i A" }}</strong>
+      </p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+
+      <!-- ORDER ITEMS -->
+      <div class="col-lg-8">
+        <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+          <h5 style="font-family: var(--font-display);" class="mb-3">Items Ordered</h5>
+          {% for item in order.items.all %}
+          <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+            <div class="d-flex gap-3 align-items-center">
+              <div style="background: #fff5f2; border-radius: 8px; padding: 8px 12px; font-size: 1.2rem;">
+                {{ item.menu_item.category.icon }}
+              </div>
+              <div>
+                <strong>{{ item.menu_item.name }}</strong>
+                <div class="text-muted" style="font-size: 0.85rem;">Qty: {{ item.quantity }} × ${{ item.price }}</div>
+                {% if item.special_instructions %}
+                <div class="text-muted" style="font-size: 0.8rem;">📝 {{ item.special_instructions }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <strong class="text-primary">${{ item.subtotal }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- DELIVERY INFO -->
+        <div class="bg-white rounded-4 shadow-sm p-4">
+          <h5 style="font-family: var(--font-display);" class="mb-3">
+            <i class="bi bi-geo-alt text-primary me-2"></i>Delivery Details
+          </h5>
+          <div class="row g-2">
+            <div class="col-sm-6">
+              <div class="text-muted" style="font-size: 0.8rem;">ADDRESS</div>
+              <div>{{ order.delivery_address }}</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-muted" style="font-size: 0.8rem;">CITY</div>
+              <div>{{ order.delivery_city }}</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-muted" style="font-size: 0.8rem;">ZIP</div>
+              <div>{{ order.delivery_zip }}</div>
+            </div>
+            <div class="col-sm-6">
+              <div class="text-muted" style="font-size: 0.8rem;">PHONE</div>
+              <div>{{ order.phone }}</div>
+            </div>
+            <div class="col-sm-6">
+              <div class="text-muted" style="font-size: 0.8rem;">PAYMENT</div>
+              <div>{{ order.get_payment_method_display }}</div>
+            </div>
+          </div>
+          {% if order.special_instructions %}
+          <div class="mt-3">
+            <div class="text-muted" style="font-size: 0.8rem;">SPECIAL INSTRUCTIONS</div>
+            <div>{{ order.special_instructions }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY SIDEBAR -->
+      <div class="col-lg-4">
+        <div class="order-summary-card">
+          <h4>Order Summary</h4>
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>${{ order.subtotal }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Delivery Fee</span>
+            <span>${{ order.delivery_fee }}</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax</span>
+            <span>${{ order.tax|floatformat:2 }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>${{ order.total }}</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="summary-row">
+            <span>Payment Status</span>
+            <span class="status-badge status-{% if order.payment_status == 'paid' %}delivered{% else %}pending{% endif %}" style="font-size: 0.75rem;">
+              {{ order.get_payment_status_display }}
+            </span>
+          </div>
+
+          <div class="mt-3 d-grid gap-2">
+            <a href="{% url 'order_list' %}" class="btn btn-outline-primary rounded-pill">← All Orders</a>
+            {% if order.status in 'pending,confirmed' %}
+            <form method="POST" action="{% url 'cancel_order' order.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger w-100 rounded-pill"
+                      onclick="return confirm('Cancel this order?')">
+                Cancel Order
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.name }} — FoodOrder{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2" style="font-size: 0.85rem; opacity: 0.7;">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}" style="color: rgba(255,255,255,0.7);">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'menu' %}" style="color: rgba(255,255,255,0.7);">Menu</a></li>
+        <li class="breadcrumb-item active" style="color: white;">{{ item.name }}</li>
+      </ol>
+    </nav>
+    <h1>{{ item.name }}</h1>
+  </div>
+</div>
+
+<section class="section" style="padding-top: 2rem;">
+  <div class="container">
+    <div class="row g-5">
+
+      <!-- IMAGE -->
+      <div class="col-lg-5">
+        <div class="bg-white rounded-4 shadow-sm overflow-hidden">
+          {% if item.image %}
+          <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-100" style="height: 380px; object-fit: cover;">
+          {% else %}
+          <div style="height: 380px; background: linear-gradient(135deg, #fff5f2, #ffe8e2); display:flex; align-items:center; justify-content:center; font-size:8rem;">
+            {{ item.category.icon }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- DETAILS -->
+      <div class="col-lg-7">
+        <div class="d-flex gap-2 mb-2 flex-wrap">
+          <span style="background: #fff5f2; color: var(--primary); font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+            {{ item.category.name }}
+          </span>
+          {% if item.is_vegetarian %}<span class="food-badge food-badge-veg">🌱 Vegetarian</span>{% endif %}
+          {% if item.is_spicy %}<span class="food-badge food-badge-spicy">🌶️ Spicy</span>{% endif %}
+          {% if item.is_featured %}<span class="food-badge food-badge-popular">⭐ Featured</span>{% endif %}
+        </div>
+
+        <h2 style="font-family: var(--font-display); font-size: 2rem;">{{ item.name }}</h2>
+        <p class="text-muted">{{ item.description }}</p>
+
+        <div class="d-flex gap-4 my-3">
+          <div>
+            <div class="text-muted" style="font-size: 0.75rem;">RATING</div>
+            <strong>⭐ {{ item.rating }}/5</strong>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size: 0.75rem;">ORDERS</div>
+            <strong>{{ item.total_orders }}</strong>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size: 0.75rem;">PREP TIME</div>
+            <strong>{{ item.preparation_time }} min</strong>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="font-size: 2.5rem; font-family: var(--font-display); font-weight: 700; color: var(--primary);">
+          ${{ item.price }}
+        </div>
+
+        <div class="mt-3 d-flex gap-3 flex-wrap">
+          {% if user.is_authenticated %}
+          <button class="btn btn-primary rounded-pill px-5 py-2" data-add-to-cart="{{ item.id }}" style="font-size: 1rem;">
+            <i class="bi bi-bag-plus me-2"></i>Add to Cart
+          </button>
+          <a href="{% url 'cart' %}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+            View Cart 🛒
+          </a>
+          {% else %}
+          <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary rounded-pill px-5 py-2">
+            Login to Order
+          </a>
+          {% endif %}
+        </div>
+
+        <div class="mt-3 text-muted" style="font-size: 0.85rem;">
+          <i class="bi bi-truck me-1"></i>Free delivery on orders over $25
+          &nbsp;&nbsp;|&nbsp;&nbsp;
+          <i class="bi bi-shield-check me-1"></i>Quality guaranteed
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="row mt-5">
+      <div class="col-lg-8">
+        <h3 style="font-family: var(--font-display);" class="mb-4">Reviews ({{ reviews.count }})</h3>
+
+        {% if user.is_authenticated %}
+        <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+          <h5>Leave a Review</h5>
+          <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">Rating</label>
+              <div class="d-flex gap-2">
+                {% for choice in review_form.rating %}
+                <label style="cursor: pointer; font-size: 1.5rem;">
+                  {{ choice.tag }}
+                  ⭐
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Comment</label>
+              {{ review_form.comment }}
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill px-4">Submit Review</button>
+          </form>
+        </div>
+        {% endif %}
+
+        {% for review in reviews %}
+        <div class="bg-white rounded-4 shadow-sm p-4 mb-3">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+              <div>{% for i in "12345" %}{% if forloop.counter <= review.rating %}⭐{% endif %}{% endfor %}</div>
+            </div>
+            <small class="text-muted">{{ review.created_at|date:"M j, Y" }}</small>
+          </div>
+          <p class="mt-2 mb-0">{{ review.comment }}</p>
+        </div>
+        {% empty %}
+        <div class="text-muted text-center py-4">No reviews yet. Be the first to review!</div>
+        {% endfor %}
+      </div>
+
+      <!-- RELATED -->
+      <div class="col-lg-4">
+        {% if related_items %}
+        <h4 style="font-family: var(--font-display);" class="mb-3">You Might Also Like</h4>
+        {% for rel in related_items %}
+        <div class="bg-white rounded-4 shadow-sm p-3 mb-3 d-flex gap-3 align-items-center">
+          <div style="font-size: 2rem; background: #fff5f2; border-radius: 8px; padding: 8px 12px; flex-shrink: 0;">
+            {{ rel.category.icon }}
+          </div>
+          <div class="flex-1">
+            <a href="{% url 'item_detail' rel.pk %}" style="text-decoration: none; color: var(--secondary); font-weight: 600;">{{ rel.name }}</a>
+            <div class="text-primary fw-bold">${{ rel.price }}</div>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .review_form input[type="radio"] { display: none; }
+</style>
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Checkout — FoodOrder{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <h1>Checkout 🚀</h1>
+    <p>Complete your order</p>
+  </div>
+</div>
+
+<section class="section" style="padding-top: 2rem;">
+  <div class="container">
+    <form method="POST" id="checkout-form">
+      {% csrf_token %}
+      <div class="row g-4">
+
+        <!-- LEFT: DELIVERY + PAYMENT -->
+        <div class="col-lg-8">
+
+          <!-- DELIVERY INFO -->
+          <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+            <h4 style="font-family: var(--font-display);" class="mb-4">
+              <i class="bi bi-geo-alt text-primary me-2"></i>Delivery Information
+            </h4>
+            <div class="mb-3">
+              <label class="form-label">Delivery Address *</label>
+              {{ form.delivery_address }}
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">City *</label>
+                {{ form.delivery_city }}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">ZIP Code *</label>
+                {{ form.delivery_zip }}
+              </div>
+            </div>
+            <div class="mt-3">
+              <label class="form-label">Phone Number *</label>
+              {{ form.phone }}
+            </div>
+          </div>
+
+          <!-- PAYMENT METHOD -->
+          <div class="bg-white rounded-4 shadow-sm p-4 mb-4">
+            <h4 style="font-family: var(--font-display);" class="mb-4">
+              <i class="bi bi-credit-card text-primary me-2"></i>Payment Method
+            </h4>
+            {% for choice in form.payment_method %}
+            <label class="payment-option w-100 mb-0">
+              {{ choice.tag }}
+              <span class="payment-icon">
+                {% if choice.data.value == 'card' %}💳
+                {% elif choice.data.value == 'cash' %}💵
+                {% elif choice.data.value == 'wallet' %}📱
+                {% endif %}
+              </span>
+              <div>
+                <strong>{{ choice.choice_label }}</strong>
+                <div class="text-muted" style="font-size: 0.8rem;">
+                  {% if choice.data.value == 'card' %}Visa, Mastercard, Amex accepted
+                  {% elif choice.data.value == 'cash' %}Pay when your order arrives
+                  {% elif choice.data.value == 'wallet' %}PayPal, Apple Pay, Google Pay
+                  {% endif %}
+                </div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+
+          <!-- SPECIAL INSTRUCTIONS -->
+          <div class="bg-white rounded-4 shadow-sm p-4">
+            <h4 style="font-family: var(--font-display);" class="mb-3">
+              <i class="bi bi-chat-text text-primary me-2"></i>Special Instructions
+            </h4>
+            {{ form.special_instructions }}
+          </div>
+
+        </div>
+
+        <!-- RIGHT: ORDER SUMMARY -->
+        <div class="col-lg-4">
+          <div class="order-summary-card">
+            <h4>Your Order</h4>
+
+            {% for item in cart.items.all %}
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="d-flex gap-2 align-items-center">
+                <span style="background: #fff5f2; border-radius: 6px; padding: 4px 8px;">
+                  {{ item.quantity }}×
+                </span>
+                <span style="font-size: 0.9rem;">{{ item.menu_item.name }}</span>
+              </div>
+              <span style="font-weight: 600; white-space: nowrap;">${{ item.subtotal }}</span>
+            </div>
+            {% endfor %}
+
+            <div class="divider"></div>
+
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>${{ subtotal }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Delivery Fee</span>
+              <span>${{ delivery_fee }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax</span>
+              <span>${{ tax|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>${{ total|floatformat:2 }}</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-3 py-3" style="font-size: 1.05rem;">
+              <i class="bi bi-bag-check me-2"></i>Place Order
+            </button>
+
+            <div class="text-center mt-2">
+              <small class="text-muted">
+                <i class="bi bi-shield-fill-check text-success me-1"></i>
+                Secure & encrypted checkout
+              </small>
+            </div>
+
+            <div class="divider"></div>
+            <a href="{% url 'cart' %}" class="btn btn-outline-secondary w-100 rounded-pill btn-sm">
+              ← Edit Cart
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</section>
+
+{% block extra_css %}
+<style>
+  .payment-option input[type="radio"] { width: 18px; height: 18px; accent-color: var(--primary); }
+</style>
+{% endblock %}
+
+{% endblock %}
